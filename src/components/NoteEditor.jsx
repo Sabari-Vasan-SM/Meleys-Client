@@ -1,4 +1,25 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Bold,
+    Italic,
+    Underline,
+    List,
+    ListOrdered,
+    AlignLeft,
+    AlignCenter,
+    AlignRight,
+    Save,
+    X,
+    Type,
+    Palette,
+    Eye,
+    EyeOff
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const fonts = [
     'Arial', 'Verdana', 'Helvetica', 'Tahoma', 'Trebuchet MS', 'Times New Roman',
@@ -30,207 +51,262 @@ function getInitialTone() {
     return paperTones[0];
 }
 
+const Icon = ({ name }) => (
+    <span className="material-symbols-outlined">{name}</span>
+);
+
 export function NoteEditor({ open, darkMode, onClose, onSave, onToggleDarkMode }) {
     const editorRef = useRef(null);
     const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [isBold, setIsBold] = useState(false);
+    const [isItalic, setIsItalic] = useState(false);
+    const [isUnderline, setIsUnderline] = useState(false);
+    const [textAlign, setTextAlign] = useState('left');
+    const [selectedFont, setSelectedFont] = useState('Arial');
+    const [selectedSize, setSelectedSize] = useState('16px');
     const [tone, setTone] = useState(getInitialTone());
-    const [floatingToolbar, setFloatingToolbar] = useState({ visible: false, top: 0, left: 0 });
 
     useEffect(() => {
         if (!open) {
-            setFloatingToolbar({ visible: false, top: 0, left: 0 });
+            setTitle('');
+            setContent('');
+            setTone(getInitialTone());
             return;
         }
-
-        setTitle('');
-        setTone(getInitialTone());
-        setTimeout(() => {
-            if (editorRef.current) {
-                document.execCommand('fontName', false, 'Arial');
-                document.execCommand('fontSize', false, '4');
-            }
-        }, 100);
     }, [open]);
-
-    useEffect(() => {
-        if (open && editorRef.current) {
-            editorRef.current.innerHTML = defaultEditorHtml;
-        }
-    }, [open]);
-
-    const handleSelectionChange = useCallback(() => {
-        const selection = window.getSelection();
-        if (selection && selection.toString().trim().length > 0 && editorRef.current?.contains(selection.anchorNode)) {
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            setFloatingToolbar({
-                visible: true,
-                top: rect.top,
-                left: rect.left + rect.width / 2
-            });
-        } else {
-            setFloatingToolbar({ visible: false, top: 0, left: 0 });
-        }
-    }, []);
-
-    useEffect(() => {
-        document.addEventListener('selectionchange', handleSelectionChange);
-        return () => {
-            document.removeEventListener('selectionchange', handleSelectionChange);
-        };
-    }, [handleSelectionChange]);
-
-    if (!open) {
-        return null;
-    }
 
     const runCommand = (command, value = null) => {
-        editorRef.current?.focus();
         document.execCommand(command, false, value);
+        updateFormattingState();
     };
 
-    const toggleBlock = () => {
-        editorRef.current?.focus();
-        const selection = window.getSelection();
-        const anchor = selection?.anchorNode?.parentElement?.closest('h1, h2, h3, p, li');
-        const nextTag = anchor?.tagName === 'H1' ? 'P' : 'H1';
-        document.execCommand('formatBlock', false, nextTag);
+    const updateFormattingState = () => {
+        setIsBold(document.queryCommandState('bold'));
+        setIsItalic(document.queryCommandState('italic'));
+        setIsUnderline(document.queryCommandState('underline'));
     };
 
     const handleSave = () => {
-        const content = editorRef.current?.innerHTML || '';
+        const editorContent = editorRef.current?.innerHTML || '';
+        const noteContent = content || editorContent;
         onSave({
             id: crypto.randomUUID(),
             title: title.trim() || 'Untitled Note',
-            content,
+            content: noteContent,
             tone,
             updatedAt: new Date().toLocaleString(),
         });
         onClose();
     };
 
+    if (!open) {
+        return null;
+    }
+
     return (
-        <div className="editor-backdrop" role="presentation" onClick={onClose}>
-            {floatingToolbar.visible && (
-                <div
-                    className="floating-toolbar editor-toolbar"
-                    style={{ top: floatingToolbar.top, left: floatingToolbar.left }}
-                    onMouseDown={(e) => e.preventDefault()}
-                >
-                    <select className="editor-select" onChange={(e) => runCommand('fontName', e.target.value)} defaultValue="Arial">
-                        <option value="Arial">Font</option>
-                        {fonts.map(font => (
-                            <option key={font} value={font}>{font}</option>
-                        ))}
-                    </select>
-                    <select className="editor-select" onChange={(e) => runCommand('fontSize', e.target.value)} defaultValue="4">
-                        <option value="4">Size</option>
-                        {fontSizes.map(size => (
-                            <option key={size.value} value={size.value}>{size.label}</option>
-                        ))}
-                    </select>
-                    <button type="button" className="tool-button" onClick={() => runCommand('bold')} aria-label="Bold">
-                        <span className="material-symbols-outlined">format_bold</span>
-                    </button>
-                    <button type="button" className="tool-button" onClick={() => runCommand('italic')} aria-label="Italic">
-                        <span className="material-symbols-outlined">format_italic</span>
-                    </button>
-                    <button type="button" className="tool-button" onClick={() => runCommand('underline')} aria-label="Underline">
-                        <span className="material-symbols-outlined">format_underlined</span>
-                    </button>
-                </div>
-            )}
-            <section
-                className="editor-shell"
-                role="dialog"
-                aria-modal="true"
-                aria-label="Note editor"
-                onClick={(event) => event.stopPropagation()}
-                style={{ '--editor-paper': tone.background, '--editor-accent': tone.accent }}
-            >
-                <header className="editor-topbar">
-                    <div className="editor-topbar__left">
-                        <button type="button" className="editor-icon-button" onClick={onClose} aria-label="Back to notes">
-                            <span className="material-symbols-outlined">arrow_back</span>
-                        </button>
-                        <div className="editor-brand">
-                            <span className="material-symbols-outlined">description</span>
-                            <span>Meleys</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4" onClick={onClose}>
+            <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                {/* Header */}
+                <CardHeader className="border-b">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                                <Type className="h-4 w-4" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-lg">New Note</CardTitle>
+                                <p className="text-sm text-muted-foreground">Create and format your note</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="sm" onClick={onToggleDarkMode}>
+                                {darkMode ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={onClose}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </CardHeader>
+
+                <CardContent className="p-0">
+                    {/* Title Input */}
+                    <div className="p-6 pb-0">
+                        <Input
+                            placeholder="Note title..."
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="text-xl font-semibold border-0 px-0 focus-visible:ring-0"
+                        />
+                    </div>
+
+                    {/* Toolbar */}
+                    <div className="flex items-center gap-2 p-4 border-b overflow-x-auto">
+                        <div className="flex items-center gap-1 border-r pr-2">
+                            <Button
+                                variant={isBold ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => runCommand('bold')}
+                            >
+                                <Bold className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant={isItalic ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => runCommand('italic')}
+                            >
+                                <Italic className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant={isUnderline ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => runCommand('underline')}
+                            >
+                                <Underline className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <div className="flex items-center gap-1 border-r pr-2">
+                            <Button
+                                variant={textAlign === 'left' ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => {
+                                    runCommand('justifyLeft');
+                                    setTextAlign('left');
+                                }}
+                            >
+                                <AlignLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant={textAlign === 'center' ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => {
+                                    runCommand('justifyCenter');
+                                    setTextAlign('center');
+                                }}
+                            >
+                                <AlignCenter className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant={textAlign === 'right' ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => {
+                                    runCommand('justifyRight');
+                                    setTextAlign('right');
+                                }}
+                            >
+                                <AlignRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <div className="flex items-center gap-1 border-r pr-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => runCommand('insertUnorderedList')}
+                            >
+                                <List className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => runCommand('insertOrderedList')}
+                            >
+                                <ListOrdered className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Select value={selectedFont} onValueChange={setSelectedFont}>
+                                <SelectTrigger className="w-32">
+                                    <SelectValue placeholder="Font" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Arial">Arial</SelectItem>
+                                    <SelectItem value="Times New Roman">Times</SelectItem>
+                                    <SelectItem value="Georgia">Georgia</SelectItem>
+                                    <SelectItem value="Courier New">Courier</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            <Select value={selectedSize} onValueChange={setSelectedSize}>
+                                <SelectTrigger className="w-20">
+                                    <SelectValue placeholder="Size" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="12px">12px</SelectItem>
+                                    <SelectItem value="14px">14px</SelectItem>
+                                    <SelectItem value="16px">16px</SelectItem>
+                                    <SelectItem value="18px">18px</SelectItem>
+                                    <SelectItem value="20px">20px</SelectItem>
+                                    <SelectItem value="24px">24px</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 
-                    <div className="editor-topbar__right">
-                        <button type="button" className="editor-icon-button" onClick={onToggleDarkMode} aria-label="Toggle dark mode">
-                            <span className="material-symbols-outlined">{darkMode ? 'light_mode' : 'dark_mode'}</span>
-                        </button>
-                        <button type="button" className="editor-save-button" onClick={handleSave}>
-                            <span className="material-symbols-outlined">save</span>
-                            <span>Save</span>
-                        </button>
+                    {/* Editor */}
+                    <div className="flex-1 p-6">
+                        <div
+                            ref={editorRef}
+                            contentEditable
+                            suppressContentEditableWarning
+                            className="min-h-[300px] max-h-[400px] overflow-y-auto rounded-lg border p-4 focus:outline-none focus:ring-2 focus:ring-ring"
+                            style={{
+                                fontFamily: selectedFont,
+                                fontSize: selectedSize,
+                                backgroundColor: tone.background,
+                                color: darkMode ? '#ffffff' : '#000000',
+                            }}
+                            onInput={(e) => setContent(e.target.innerHTML)}
+                            onSelect={updateFormattingState}
+                        />
                     </div>
-                </header>
 
-                <div className="editor-card">
-                    <div className="editor-toolbar-row">
-                        <div className="editor-toolbar" aria-label="Formatting tools">
-                            <select className="editor-select" onChange={(e) => runCommand('fontName', e.target.value)} defaultValue="Arial">
-                                <option value="Arial">Font</option>
-                                {fonts.map(font => (
-                                    <option key={font} value={font}>{font}</option>
-                                ))}
-                            </select>
-                            <select className="editor-select" onChange={(e) => runCommand('fontSize', e.target.value)} defaultValue="4">
-                                <option value="4">Size</option>
-                                {fontSizes.map(size => (
-                                    <option key={size.value} value={size.value}>{size.label}</option>
-                                ))}
-                            </select>
-                            <button type="button" className="tool-button" onClick={() => runCommand('bold')} aria-label="Bold">
-                                <span className="material-symbols-outlined">format_bold</span>
-                            </button>
-                            <button type="button" className="tool-button" onClick={() => runCommand('italic')} aria-label="Italic">
-                                <span className="material-symbols-outlined">format_italic</span>
-                            </button>
-                            <button type="button" className="tool-button" onClick={() => runCommand('underline')} aria-label="Underline">
-                                <span className="material-symbols-outlined">format_underlined</span>
-                            </button>
-                            <button type="button" className="tool-button" onClick={toggleBlock} aria-label="Text style">
-                                <span className="material-symbols-outlined">title</span>
-                            </button>
-                            <button type="button" className="tool-button" onClick={() => runCommand('insertUnorderedList')} aria-label="List">
-                                <span className="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
-                        </div>
-
-                        <div className="paper-tone-control" aria-label="Paper tone">
-                            <span>PAPER TONE</span>
-                            <div className="paper-tone-swatches">
-                                {paperTones.map((swatch) => (
+                    {/* Paper Tone Selector */}
+                    <div className="p-6 pt-0">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <Palette className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm font-medium">Paper Tone:</span>
+                            </div>
+                            <div className="flex gap-2">
+                                {paperTones.map((paperTone) => (
                                     <button
-                                        key={swatch.id}
-                                        type="button"
-                                        className={tone.id === swatch.id ? 'paper-tone-swatch active' : 'paper-tone-swatch'}
-                                        style={{ background: swatch.accent }}
-                                        aria-label={swatch.label}
-                                        onClick={() => setTone(swatch)}
+                                        key={paperTone.id}
+                                        className={cn(
+                                            "w-6 h-6 rounded-full border-2 transition-all",
+                                            tone.id === paperTone.id
+                                                ? "border-primary ring-2 ring-primary/20"
+                                                : "border-border"
+                                        )}
+                                        style={{ backgroundColor: paperTone.background }}
+                                        onClick={() => setTone(paperTone)}
+                                        aria-label={paperTone.label}
                                     />
                                 ))}
                             </div>
                         </div>
                     </div>
+                </CardContent>
 
-                    <div className="editor-paper" style={{ background: 'var(--editor-paper)' }}>
-                        <div
-                            ref={editorRef}
-                            className="editor-body"
-                            contentEditable
-                            suppressContentEditableWarning
-                            spellCheck={false}
-                            aria-label="Note content"
-                        />
+                {/* Footer */}
+                <div className="flex items-center justify-between p-6 border-t">
+                    <div className="text-sm text-muted-foreground">
+                        {content.length} characters
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSave}>
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Note
+                        </Button>
                     </div>
                 </div>
-            </section>
+            </Card>
         </div>
     );
 }
