@@ -12,7 +12,7 @@ const iconMap = {
     trash: 'delete',
 };
 
-export function HomePage({ onLogout }) {
+export function HomePage({ onLogout, user }) {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -26,12 +26,82 @@ export function HomePage({ onLogout }) {
         };
     }, [isDarkMode]);
 
+    useEffect(() => {
+        const loadNotes = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                const response = await fetch('/api/notes', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    const formattedNotes = data.notes.map(note => ({
+                        id: note.id,
+                        title: note.title,
+                        content: note.content,
+                        tone: getInitialTone(),
+                        updatedAt: new Date(note.updated_at).toLocaleString(),
+                    }));
+                    setSavedNotes(formattedNotes);
+                }
+            } catch (error) {
+                console.error('Error loading notes:', error);
+            }
+        };
+
+        loadNotes();
+    }, []);
+
+    const getInitialTone = () => ({
+        id: 'lavender',
+        label: 'Lavender',
+        background: '#ffffff',
+        accent: '#d6c8ff'
+    });
+
     const toggleDarkMode = () => {
         setIsDarkMode((value) => !value);
     };
 
-    const handleSaveNote = (note) => {
-        setSavedNotes((currentNotes) => [note, ...currentNotes]);
+    const handleSaveNote = async (note) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/notes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    title: note.title,
+                    content: note.content,
+                }),
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                // Add the saved note to local state with proper ID
+                const savedNote = {
+                    ...note,
+                    id: data.note.id,
+                    updatedAt: new Date().toLocaleString(),
+                };
+                setSavedNotes((currentNotes) => [savedNote, ...currentNotes]);
+            } else {
+                console.error('Failed to save note:', data.error);
+                // Fallback to local storage if API fails
+                setSavedNotes((currentNotes) => [note, ...currentNotes]);
+            }
+        } catch (error) {
+            console.error('Error saving note:', error);
+            // Fallback to local storage if network fails
+            setSavedNotes((currentNotes) => [note, ...currentNotes]);
+        }
     };
 
     const renderedSavedNotes = useMemo(
@@ -53,7 +123,7 @@ export function HomePage({ onLogout }) {
                 <div className="brand-block">
                     <div>
                         <h1>Meleys</h1>
-                        
+
                     </div>
                 </div>
 

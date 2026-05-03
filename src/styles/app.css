@@ -24,12 +24,15 @@ html[data-theme='dark'] {
     --page-bg-2: #171527;
     --page-glow-1: rgba(121, 87, 208, 0.24);
     --page-glow-2: rgba(88, 70, 132, 0.2);
-    --surface: rgba(26, 23, 38, 0.86);
-    --surface-strong: rgba(31, 27, 46, 0.96);
+    --surface: rgba(26, 23, 38, 0.96);
+    --surface-strong: rgba(31, 27, 46, 0.98);
     --border: rgba(193, 177, 255, 0.16);
     --text-main: #f3eefc;
     --text-soft: #bab0cf;
-    --shadow: 0 26px 64px rgba(0, 0, 0, 0.38);
+    --accent: #9b7dff;
+    --accent-dark: #7a63c5;
+    --accent-soft: #4a3d7a;
+    --shadow: 0 26px 64px rgba(0, 0, 0, 0.48);
 }
 
 * {
@@ -51,10 +54,7 @@ body {
     margin: 0;
     color: var(--text-main);
     font-family: 'Inter', system-ui, sans-serif;
-    background:
-        radial-gradient(circle at top left, var(--page-glow-1), transparent 26%),
-        radial-gradient(circle at bottom right, var(--page-glow-2), transparent 30%),
-        linear-gradient(180deg, var(--page-bg-2) 0%, var(--page-bg) 100%);
+    background: var(--page-bg);
 }
 
 button,
@@ -143,7 +143,7 @@ svg {
     margin: 0 auto 10px;
     display: grid;
     place-items: center;
-    background: linear-gradient(180deg, #c7b0ff 0%, #a88df3 100%);
+    background: #c7b0ff;
     color: #fbf7ff;
     box-shadow: 0 10px 24px rgba(122, 92, 205, 0.3);
 }
@@ -305,7 +305,7 @@ svg {
 .primary-button {
     height: 48px;
     border-radius: 999px;
-    background: linear-gradient(180deg, #7a63c5 0%, #6b54af 100%);
+    background: #7a63c5;
     color: white;
     font-size: 0.99rem;
     font-weight: 700;
@@ -457,7 +457,7 @@ svg {
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.75);
     display: grid;
     place-items: center;
-    background: linear-gradient(180deg, #7a63c5 0%, #f4b8c2 100%);
+    background: #7a63c5;
     color: white;
     font-size: 0.58rem;
     font-weight: 800;
@@ -501,9 +501,7 @@ svg {
     grid-template-columns: 220px minmax(0, 1fr);
     gap: 14px;
     padding: 12px;
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.18)),
-        linear-gradient(180deg, #f5f1f9 0%, #f7f2f8 100%);
+    background: rgba(255, 255, 255, 0.32);
 }
 
 .sidebar {
@@ -560,7 +558,7 @@ svg {
 }
 
 .nav-item.active {
-    background: linear-gradient(90deg, rgba(184, 154, 255, 0.42), rgba(224, 210, 255, 0.7));
+    background: rgba(184, 154, 255, 0.56);
     color: #2d2551;
 }
 
@@ -571,7 +569,7 @@ svg {
 .new-note-button {
     height: 42px;
     border-radius: 999px;
-    background: linear-gradient(180deg, #b79df8 0%, #ad8ff0 100%);
+    background: #b79df8;
     color: #2d2253;
     font-weight: 700;
     display: inline-flex;
@@ -679,7 +677,7 @@ svg {
 }
 
 .note-card--roadmap {
-    background: linear-gradient(180deg, #e6d8ff 0%, #dfd0ff 100%);
+    background: #e6d8ff;
     grid-row: span 2;
     min-height: 520px;
 }
@@ -715,23 +713,20 @@ svg {
     position: relative;
     height: 150px;
     margin: -18px -18px 14px;
-    background:
-        radial-gradient(circle at 66% 24%, rgba(228, 105, 255, 0.7), transparent 15%),
-        radial-gradient(circle at 52% 58%, rgba(158, 80, 210, 0.7), transparent 13%),
-        linear-gradient(180deg, #150f21 0%, #26142f 50%, #0f0d14 100%);
+    background: #26142f;
 }
 
 .photo-panel__glow {
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), transparent 40%, rgba(255, 255, 255, 0.05));
+    background: rgba(255, 255, 255, 0.04);
 }
 
 .photo-panel__desk,
 .photo-panel__monitor,
 .photo-panel__tower {
     position: absolute;
-    background: linear-gradient(180deg, #3e2948, #160f1f);
+    background: #3e2948;
     box-shadow: 0 0 30px rgba(176, 95, 230, 0.18);
 }
 
@@ -749,9 +744,7 @@ svg {
     right: 16px;
     top: 18px;
     border-radius: 10px;
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent),
-        linear-gradient(180deg, #4d1667, #1a0f28);
+    background: #4d1667;
     box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.06), 0 0 36px rgba(204, 76, 255, 0.18);
 }
 
@@ -764,7 +757,7 @@ svg {
 }
 
 .note-card--pink {
-    background: linear-gradient(180deg, #f9d6de 0%, #f7d2dc 100%);
+    background: #f9d6de;
     min-height: 240px;
 }
 
@@ -777,7 +770,7 @@ svg {
 }
 
 .note-card--books {
-    background: linear-gradient(180deg, #c9b0ff 0%, #bc9fff 100%);
+    background: #c9b0ff;
     min-height: 260px;
 }
 
@@ -806,7 +799,7 @@ svg {
 }
 
 .note-card--quote {
-    background: linear-gradient(180deg, #c9b0ff 0%, #c0a3ff 100%);
+    background: #c9b0ff;
     min-height: 320px;
 }
 
@@ -838,7 +831,7 @@ svg {
 }
 
 .note-card--meeting {
-    background: linear-gradient(180deg, #f8f3f7 0%, #ffffff 100%);
+    background: #f8f3f7;
     min-height: 140px;
 }
 
@@ -846,7 +839,7 @@ svg {
     display: grid;
     gap: 10px;
     min-height: 240px;
-    background: linear-gradient(180deg, #fffdfa 0%, #f5eefc 100%);
+    background: #fffdfa;
 }
 
 .saved-note-label {
@@ -891,11 +884,11 @@ svg {
 }
 
 .note-tone-lavender {
-    background: linear-gradient(180deg, #fffdfa 0%, #f5eefc 100%);
+    background: #fffdfa;
 }
 
 .note-tone-cream {
-    background: linear-gradient(180deg, #fffaf0 0%, #fff1cf 100%);
+    background: #fffaf0;
 }
 
 .note-tone-sky {
@@ -1426,7 +1419,7 @@ html[data-theme='dark'] .account-menu__item--destructive {
     width: 48px;
     height: 48px;
     border-radius: 16px;
-    background: linear-gradient(180deg, #c9b0ff 0%, #b798ff 100%);
+    background: #c9b0ff;
     color: #3a245f;
     display: grid;
     place-items: center;
@@ -1622,5 +1615,136 @@ html[data-theme='dark'] .account-menu__item--destructive {
     .floating-action {
         right: 14px;
         bottom: 14px;
+    }
+}
+
+/* Dark Mode Specific Enhancements */
+html[data-theme='dark'] {
+
+    /* Authentication components */
+    .auth-card {
+        background: var(--surface-strong);
+        border: 1px solid var(--border);
+    }
+
+    .input-shell {
+        background: var(--surface);
+        border: 1px solid var(--border);
+    }
+
+    .input-shell input {
+        background: transparent;
+        color: var(--text-main);
+    }
+
+    .primary-button {
+        background: var(--accent);
+    }
+
+    /* Dashboard components */
+    .sidebar {
+        background: var(--surface-strong);
+        border: 1px solid var(--border);
+    }
+
+    .nav-item {
+        color: var(--text-soft);
+    }
+
+    .nav-item.active {
+        background: var(--accent);
+        color: white;
+    }
+
+    .topbar {
+        background: var(--surface-strong);
+        border-bottom: 1px solid var(--border);
+    }
+
+    /* Note cards */
+    .note-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+    }
+
+    .note-card--saved {
+        background: var(--surface);
+        border: 1px solid var(--border);
+    }
+
+    .saved-note-label {
+        background: var(--accent);
+        color: white;
+    }
+
+    /* Editor components */
+    .editor-shell {
+        background: var(--surface-strong);
+        border: 1px solid var(--border);
+    }
+
+    .editor-paper {
+        background: var(--surface);
+        border: 1px solid var(--border);
+    }
+
+    .editor-body {
+        background: transparent;
+        color: var(--text-main);
+    }
+
+    .editor-select,
+    .tool-button {
+        background: var(--surface);
+        color: var(--text-main);
+        border: 1px solid var(--border);
+    }
+
+    /* Settings panel */
+    .settings-panel {
+        background: var(--surface-strong);
+        border: 1px solid var(--border);
+    }
+
+    .settings-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+    }
+
+    /* Account menu */
+    .account-menu {
+        background: var(--surface-strong);
+        border: 1px solid var(--border);
+    }
+
+    /* Floating action button */
+    .floating-action {
+        background: var(--accent);
+        color: white;
+    }
+
+    /* Note tones in dark mode */
+    .note-tone-lavender {
+        background: var(--surface);
+    }
+
+    .note-tone-cream {
+        background: var(--surface);
+    }
+
+    .note-tone-sky {
+        background: var(--surface);
+    }
+
+    .note-tone-mint {
+        background: var(--surface);
+    }
+
+    .note-tone-rose {
+        background: var(--surface);
+    }
+
+    .note-tone-silver {
+        background: var(--surface);
     }
 }

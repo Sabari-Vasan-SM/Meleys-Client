@@ -7,7 +7,52 @@ const socialButtons = [
 
 export function LoginPage({ onLogin }) {
     const [mode, setMode] = useState('login');
+    const [formData, setFormData] = useState({ email: '', password: '', fullName: '' });
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
     const isLogin = mode === 'login';
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        setError('');
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+            const payload = isLogin
+                ? { email: formData.email, password: formData.password }
+                : { email: formData.email, password: formData.password, fullName: formData.fullName };
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                onLogin(data.user);
+            } else {
+                setError(data.error || 'Authentication failed');
+            }
+        } catch (err) {
+            setError('Network error. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <main className="auth-shell">
@@ -49,12 +94,38 @@ export function LoginPage({ onLogin }) {
                         </button>
                     </div>
 
-                    <form className="auth-form" onSubmit={(event) => event.preventDefault()}>
+                    <form className="auth-form" onSubmit={handleSubmit}>
+                        {!isLogin && (
+                            <label className="field">
+                                <span>Full Name</span>
+                                <div className="input-shell">
+                                    <MailIcon />
+                                    <input
+                                        type="text"
+                                        name="fullName"
+                                        placeholder="John Doe"
+                                        aria-label="Full name"
+                                        value={formData.fullName}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                </div>
+                            </label>
+                        )}
+
                         <label className="field">
                             <span>Email Address</span>
                             <div className="input-shell">
                                 <MailIcon />
-                                <input type="email" placeholder="name@company.com" aria-label="Email address" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="name@company.com"
+                                    aria-label="Email address"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    required
+                                />
                             </div>
                         </label>
 
@@ -62,19 +133,44 @@ export function LoginPage({ onLogin }) {
                             <span>Password</span>
                             <div className="input-shell">
                                 <LockIcon />
-                                <input type="password" value="••••••••" readOnly aria-label="Password" />
-                                <button type="button" className="icon-button" aria-label="Show password">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    placeholder="Enter your password"
+                                    aria-label="Password"
+                                    value={formData.password}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    className="icon-button"
+                                    aria-label="Show password"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
                                     <EyeIcon />
                                 </button>
                             </div>
                         </label>
 
-                        <a href="/" className="forgot-link forgot-link--below" onClick={(event) => event.preventDefault()}>
-                            Forgot?
-                        </a>
+                        {error && (
+                            <div className="error-message" style={{ color: 'red', fontSize: '14px', marginTop: '8px' }}>
+                                {error}
+                            </div>
+                        )}
 
-                        <button type="button" className="primary-button" onClick={onLogin}>
-                            <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
+                        {isLogin && (
+                            <a href="/" className="forgot-link forgot-link--below" onClick={(event) => event.preventDefault()}>
+                                Forgot?
+                            </a>
+                        )}
+
+                        <button
+                            type="submit"
+                            className="primary-button"
+                            disabled={isLoading}
+                        >
+                            <span>{isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}</span>
                             <ArrowIcon />
                         </button>
                     </form>
